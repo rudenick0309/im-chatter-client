@@ -1,24 +1,58 @@
+let example = {
+  username: "df",
+  text: "df",
+  roomname: "코드스테이츠",
+}
+
 // eslint-disable-next-line
 const app = {
   server: "http://52.78.206.149:3000/messages",
   init() {
     app.fetch()
-    .then((json) => {
-      json.forEach((msg) =>{
-        console.log(msg);
+    .then((json) => { 
+      app.data = json;
+      let roomnameObj = {};
+      json.forEach((msg) => {
+        if (!roomnameObj[msg.roomname]) {
+          roomnameObj[msg.roomname] = 1;
+        } else {
+          roomnameObj[msg.roomname] += 1;
+        }
         app.renderMessage(msg);
-      })
+      });
 
+      Object.keys(roomnameObj).forEach((key) => {
+        let target = document.querySelector('select#select-room');
+        let optionEle = document.createElement('option');
+        optionEle.setAttribute('value', key);
+        optionEle.textContent = key;
+        target.appendChild(optionEle);
+      });
     })
   },
+
+  changeRoom() {
+    app.clearMessage();
+    let curRoom = document.querySelector('select#select-room').value;
+    let curMsg = [];
+    app.data.forEach((msg) => {
+      if(msg.roomname === curRoom) {
+        curMsg.push(msg);
+      }
+    });
+    curMsg.forEach((msg) => {
+      app.renderMessage(msg);
+    });
+  },
+
   fetch() {
     return fetch(app.server)
     .then((res) => {
       return res.json()
-    })
+    });
   },
-  send(message, e) {
-    e.preventDefault();
+
+  send(message) {
     fetch(app.server, {
       method: 'POST',
       body: JSON.stringify(message),
@@ -26,11 +60,29 @@ const app = {
         "Content-Type": "application/json",
       }
     })
-    .then((res) => console.log(res));
+    .then((res) => res.json())
+    //eslint-disable-next-line no-console;
+    .then((json) => {
+      // console.log(json);
+      app.searchMsg(json.id);
+    });
   },
-  clearMessage() {
 
+  searchMsg(id) {
+    app.fetch()
+    .then((json) => {
+      json.forEach((msg) => {
+        if (msg.id === id) {
+          app.renderMessage(msg);
+        }
+      })
+    })
   },
+
+  clearMessage() {
+    document.querySelector('div#chats').textContent = '';
+  },
+
   renderMessage(message) {
     let contactMessage = document.querySelector('div#chats');
     let divMessage = document.createElement('DIV');
@@ -46,19 +98,40 @@ const app = {
     divContent.appendChild(spanContent);
     contactMessage.appendChild(divMessage);
     contactMessage.appendChild(divContent);
+  },
+  
+  makeObj() {
+    return {
+      username: document.querySelector('input#message-nickname').value,
+      text: document.querySelector('input#message-reply').value,
+      roomname: document.querySelector('select#select-room').value,
+    }
+  },
+
+  sendMsg() {
+    let newMsg = app.makeObj();
+    app.send(newMsg);
   }
 };
 
-let form = document.querySelector('form');
-form.addEventListener('submit', app.send)
+let submitButton = document.querySelector('button#message-button');
+submitButton.addEventListener('click', app.sendMsg);
 
-let example ={
-  username: "df",
-  text: "df",
-  roomname: "코드스테이츠",
-}
+document.querySelector('select#select-room').addEventListener('change', app.changeRoom)
 
 app.renderMessage(example)
+
+/* 
+  <div>
+    <form class="form-message">
+      <label for="message-nickname">이름</label>
+      <input id="message-nickname" type="text">
+      <input id="message-reply" type="text">
+      <button id="message-button" type="button">전송</button>
+    </form>
+  </div>
+*/
+
 
 /* 
 <div class="message">
