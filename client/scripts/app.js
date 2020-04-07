@@ -54,11 +54,8 @@ const app = {
         "Content-Type": "application/json",
       }
     })
-    .then((res) => res.json())
-    //eslint-disable-next-line no-console;
-    .then((json) => {
-      // console.log(json);
-      app.searchMsg(json.id);
+    .then((res) => {
+      res.json();
       app.getNewMsg();
     });
   },
@@ -90,11 +87,19 @@ const app = {
     spanContent.textContent = message.text;
     spanDate.textContent = message.date;
     divMessage.appendChild(spanName);
-    divMessage.appendChild(spanDate);
-    divContent.appendChild(spanContent);
+    divMessage.appendChild(spanContent);
+    divContent.appendChild(spanDate);
     messageContainer.appendChild(divMessage);
     messageContainer.appendChild(divContent);
     contactMessage.appendChild(messageContainer);
+    messageContainer.style.display = 'flex';
+    messageContainer.style.justifyContent = 'space-around';
+    divMessage.style.position = 'relative';
+    spanContent.style.position = 'absolute';
+    spanContent.style.top = '20px';
+    spanContent.style.width = '200px';
+    spanContent.style.left = '0px';
+    divMessage.style.marginBottom = '50px';
   },
   
   makeObj() {
@@ -113,7 +118,7 @@ const app = {
   getNewMsg() {
     app.fetch()
     .then((json) => {
-      let lastID = json[json.length - 1].id;
+      let lastID = app.data[app.data.length - 1].id;
       json.forEach((msg) => {
         if (msg.id > lastID) {
           app.data.push(msg);
