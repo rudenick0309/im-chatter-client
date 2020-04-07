@@ -21,6 +21,7 @@ body {
   font-size: 35px;
   margin-bottom: 5px;
   padding: 5px;
+  justify-content: s;
 }
 
 #main h1 span {
