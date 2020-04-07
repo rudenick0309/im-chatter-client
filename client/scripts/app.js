@@ -32,7 +32,7 @@ const app = {
   },
 
   changeRoom() {
-    app.clearMessage();
+    app.clearMessages();
     let curRoom = document.querySelector('select#select-room').value;
     let curMsg = [];
     app.data.forEach((msg) => {
@@ -79,11 +79,12 @@ const app = {
     })
   },
 
-  clearMessage() {
-    document.querySelector('div#chats').textContent = '';
+  clearMessages() {
+    document.querySelector('div#chats').innerHTML = '';
   },
 
   renderMessage(message) {
+    let messageContainer = document.createElement('DIV');
     let contactMessage = document.querySelector('div#chats');
     let divMessage = document.createElement('DIV');
     let spanName = document.createElement('SPAN');
@@ -96,8 +97,9 @@ const app = {
     divMessage.appendChild(spanName);
     divMessage.appendChild(spanDate);
     divContent.appendChild(spanContent);
-    contactMessage.appendChild(divMessage);
-    contactMessage.appendChild(divContent);
+    messageContainer.appendChild(divMessage);
+    messageContainer.appendChild(divContent);
+    contactMessage.appendChild(messageContainer);
   },
   
   makeObj() {
@@ -111,7 +113,20 @@ const app = {
   sendMsg() {
     let newMsg = app.makeObj();
     app.send(newMsg);
-  }
+  },
+
+  getNewMsg() {
+    app.fetch()
+    .then((json) => {
+      let lastID = json[json.length - 1].id;
+      json.forEach((msg) => {
+        if (msg.id > lastID) {
+          app.data.push(msg);
+          app.renderMessage(msg);
+        }
+      });
+    });
+  },
 };
 
 let submitButton = document.querySelector('button#message-button');
@@ -119,37 +134,7 @@ submitButton.addEventListener('click', app.sendMsg);
 
 document.querySelector('select#select-room').addEventListener('change', app.changeRoom)
 
-app.renderMessage(example)
-
-/* 
-  <div>
-    <form class="form-message">
-      <label for="message-nickname">이름</label>
-      <input id="message-nickname" type="text">
-      <input id="message-reply" type="text">
-      <button id="message-button" type="button">전송</button>
-    </form>
-  </div>
-*/
-
-
-/* 
-<div class="message">
-  <div>
-    <span class="message-name">
-      아무개
-    </span>
-    <span class="message-date">
-      2019-04-06
-    </span>
-  </div>
-  <div>
-    <span class="message-content">
-      content
-    </span>
-  </div>
-</div>
-*/
-
+app.renderMessage(example);
+setInterval(app.getNewMsg, 1000*5);
 
 app.init();
